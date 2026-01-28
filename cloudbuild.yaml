@@ -1,0 +1,38 @@
+steps:
+  # =====================================================
+  # STAGE 1: QUALITY GATE (Run the Tests)
+  # =====================================================
+  - name: 'python:3.11'
+    id: 'run-eval-tests'
+    entrypoint: 'bash'
+    # We explicitly inject the Project ID here so evaluate.py works
+    env:
+      - 'GCP_PROJECT_ID=$PROJECT_ID'
+    args:
+      - '-c'
+      - |
+        echo "🔹 [Stage 1] Installing Dependencies..."
+        pip install -r requirements.txt
+
+        echo "🔹 [Stage 1] Running Evaluation Loop..."
+        python3 tests/evaluate.py
+
+  # =====================================================
+  # STAGE 2: BUILD & DEPLOY (Only if Stage 1 passes)
+  # =====================================================
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-agent'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'brady-logistics-agent'     # Name of your Service
+      - '--source=.'                # Build current folder
+      - '--region=us-central1'
+      - '--allow-unauthenticated'   # Make it public
+    
+    # This ensures Stage 2 NEVER runs if Stage 1 fails
+    waitFor: ['run-eval-tests']
+
+# Global Timeout (10 mins)
+timeout: '600s'

@@ -1,0 +1,1 @@
+web: adk run brady_agent
