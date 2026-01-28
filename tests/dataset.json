@@ -1,0 +1,12 @@
+[
+    {
+      "id": 1,
+      "input": "Where is order ORD-123?",
+      "criteria": "Must mention 'Shipped' and 'Headphones'."
+    },
+    {
+      "id": 2,
+      "input": "Check status of ORD-999.",
+      "criteria": "Must politely apologize that the order was not found."
+    }
+  ]
