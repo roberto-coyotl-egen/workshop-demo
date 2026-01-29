@@ -34,7 +34,7 @@ steps:
     waitFor: ['run-eval-tests']
 
   # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (Simplified & Robust)
+  # STAGE 3: AGENT ENGINE DEPLOY (Working Bash + Telemetry Injection)
   # =====================================================
   - name: 'python:3.11' 
     id: 'deploy-agent-engine'
@@ -44,59 +44,39 @@ steps:
     args:
       - '-c'
       - |
-        echo "🔹 [Stage 3] Installing Dependencies..."
-        pip install --upgrade "google-cloud-aiplatform[reasoningengine,langchain]" google-adk python-dotenv
+        echo "🔹 [Stage 3] Installing ADK..."
+        pip install google-adk
 
-        echo "🔹 [Stage 3] Creating Bucket..."
-        # Hardcoded bucket and region: simple and reliable.
-        gcloud storage buckets create gs://adk_agent_engine_staging --location=us-central1 --uniform-bucket-level-access || true
+        # --- FIX 1: Add Telemetry Libraries ---
+        echo "🔹 [Stage 3] Adding Telemetry libraries to requirements.txt..."
+        # We ensure the container has the code needed to send traces
+        echo "opentelemetry-sdk" >> requirements.txt
+        echo "opentelemetry-exporter-google-cloud" >> requirements.txt
 
-        echo "🔹 [Stage 3] Patching Agent Code..."
-        # We create a header file with the initialization code.
-        # This injects the Project ID and Telemetry flags directly into the agent.
-        cat <<EOF > header.py
+        # --- FIX 2: Inject Configuration into Code ---
+        echo "🔹 [Stage 3] Injecting Telemetry Config into agent.py..."
+        
+        # We write a header that forces the variables to TRUE inside the python process
+        cat <<EOF > telemetry_header.py
         import os
-        import vertexai
-        
-        # 1. Initialize Vertex AI immediately (Prevents Import Crash)
-        vertexai.init(project='$PROJECT_ID', location='us-central1')
-        
-        # 2. Set Environment Variables (Enables Telemetry)
-        os.environ['GCP_PROJECT_ID'] = '$PROJECT_ID'
+        # Force Telemetry ON (Injected by Cloud Build)
         os.environ['GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY'] = 'true'
         os.environ['OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT'] = 'true'
         EOF
 
-        # Merge header + original file -> overwrite original agent.py
-        cat header.py brady_agent/agent.py > brady_agent/agent_temp.py
+        # We prepend this header to your existing agent file
+        # temp_file = header + original_code
+        cat telemetry_header.py brady_agent/agent.py > brady_agent/agent_temp.py
+        
+        # Overwrite the original with the new "Telemetry Enabled" version
         mv brady_agent/agent_temp.py brady_agent/agent.py
 
-        echo "🔹 [Stage 3] Deploying..."
-        cat <<EOF > run_deploy.py
-        import vertexai
-        from vertexai.preview import reasoning_engines
-        from brady_agent.agent import root_agent 
-
-        # Re-init for the deploy script itself so it can upload the code
-        vertexai.init(project='$PROJECT_ID', location='us-central1', staging_bucket='gs://adk_agent_engine_staging')
-
-        print("🚀 Deploying to Vertex AI...")
-        remote_agent = reasoning_engines.ReasoningEngine.create(
-            root_agent,
-            requirements=[
-                "google-cloud-aiplatform[reasoningengine,langchain]", 
-                "python-dotenv", 
-                "google-adk",
-                "opentelemetry-sdk",
-                "opentelemetry-exporter-google-cloud"
-            ],
-            display_name="Brady Logistics Agent",
-            description="Logistics assistant (Observability Enabled)"
-        )
-        print(f"✅ Deployment Complete! Resource: {remote_agent.resource_name}")
-        EOF
-
-        python3 run_deploy.py
+        # --- ORIGINAL DEPLOYMENT COMMAND ---
+        echo "🔹 [Stage 3] Deploying to Vertex AI Agent Engine..."
+        adk deploy agent_engine brady_agent \
+          --project $GCP_PROJECT_ID \
+          --region us-central1 \
+          --display_name "Brady Logistics Agent (v$BUILD_ID)"
 
     waitFor: ['run-eval-tests']
 
