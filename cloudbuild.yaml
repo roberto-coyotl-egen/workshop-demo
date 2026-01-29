@@ -1,24 +1,16 @@
 steps:
-  # =====================================================
-  # STAGE 1: QUALITY GATE (Merged for path safety)
-  # =====================================================
+  # STAGE 1: QUALITY GATE
   - name: 'python:3.11'
     id: 'run-eval-tests'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        echo "🔹 [Stage 1] Installing Dependencies..."
         pip install --upgrade pip
         pip install -r requirements.txt
-        
-        echo "🔹 [Stage 1] Running Tests..."
-        # Using 'python3 -m' ensures it finds pytest in the current environment
         python3 -m pytest tests/evaluate.py
 
-  # =====================================================
   # STAGE 2: CLOUD RUN (Build -> Push -> Deploy)
-  # =====================================================
   - name: 'gcr.io/cloud-builders/docker'
     id: 'build-container'
     args: ['build', '-t', 'gcr.io/$PROJECT_ID/brady-logistics-agent', '.']
@@ -42,28 +34,23 @@ steps:
       - '--set-env-vars=GCP_PROJECT_ID=$PROJECT_ID'
     waitFor: ['push-container']
 
-  # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (Clean & Simple)
-  # =====================================================
+  # STAGE 3: AGENT ENGINE DEPLOY
   - name: 'python:3.11'
     id: 'deploy-agent-engine'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        echo "🔹 [Stage 3] Installing ADK & Telemetry..."
         pip install google-adk
-        
-        # We still add these to ensure the agent has the power to send data
         echo "opentelemetry-sdk" >> requirements.txt
         echo "opentelemetry-exporter-google-cloud" >> requirements.txt
-
-        echo "🔹 [Stage 3] Deploying using local .env..."
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
           --region us-central1 \
-          --display_name "Brady Logistics Agent"
-
+          --display_name "Brady Logistics Agent" \
+          --env_file .env \
+          --requirements_file requirements.txt \
+          --trace_to_cloud
     waitFor: ['run-eval-tests']
 
 options:
