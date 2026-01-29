@@ -6,7 +6,12 @@ from google.auth.transport.requests import Request
 from dotenv import load_dotenv
 
 # 1. Setup
-load_dotenv()
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv(".env")
+
 PROJECT_ID = os.getenv("GCP_PROJECT_ID")
 REGION = os.getenv("REGION", "us-central1")
 AGENT_ID = os.getenv("AGENT_ID")

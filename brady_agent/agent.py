@@ -5,8 +5,12 @@ from dotenv import load_dotenv
 from google.adk.agents import Agent
 
 # --- 1. SETUP & CREDENTIALS ---
-load_dotenv()
+import os
+from dotenv import load_dotenv
 
+
+load_dotenv(".env")
+    
 project_id = os.getenv("GCP_PROJECT_ID")
 location = "us-central1"
 
@@ -89,7 +93,7 @@ root_agent = Agent(
     
     3. **Test Data**: If a user asks for a fake order, use `generate_random_order`.
     
-    TONE & STYLE:
+    TONE & STYLE: 
     - Be helpful, concise, and professional.
     - If the user asks "Where is it?", include the tracking link if one exists.
     - If the user asks "What is inside?", list the item names clearly.

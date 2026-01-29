@@ -1,6 +1,6 @@
 steps:
   # =====================================================
-  # STAGE 1: EVALUATION TESTS
+  # STAGE 1: INSTALL & TEST (All-in-one to avoid path errors)
   # =====================================================
   - name: 'python:3.11'
     id: 'run-eval-tests'
@@ -8,20 +8,16 @@ steps:
     args:
       - '-c'
       - |
-        echo "🔹 Running Pytest..."
+        echo "🔹 Installing dependencies..."
+        pip install --upgrade pip
         pip install -r requirements.txt
+        
+        echo "🔹 Running Pytest..."
+        # Using 'python3 -m' is the secret to making pytest work in Cloud Build
         python3 -m pytest tests/
 
   # =====================================================
-  # STAGE 2: BUILD WEB APP CONTAINER
-  # =====================================================
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'build-container'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/brady-web-app', '.']
-    waitFor: ['run-eval-tests']
-
-  # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (Elegant & Isolated)
+  # STAGE 2: AGENT ENGINE DEPLOY (Pure & Simple)
   # =====================================================
   - name: 'python:3.11'
     id: 'deploy-agent-engine'
@@ -33,10 +29,8 @@ steps:
         pip install google-adk
         
         echo "🔹 Deploying Agent Engine to $PROJECT_ID..."
-        
-        # We explicitly use the .env from the repo.
-        # It never sees your private .env.local because that's not in Git.
-        # ADK version 1.23+ handles the project ID automatically from the environment.
+        # This uses your repo's .env for telemetry 
+        # and $PROJECT_ID for the cloud destination.
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
           --region us-central1 \
@@ -47,7 +41,5 @@ steps:
 
     waitFor: ['run-eval-tests']
 
-# No substitutions needed for the project ID as it's built-in.
-# You can add other custom variables here if needed later.
 options:
   logging: CLOUD_LOGGING_ONLY
