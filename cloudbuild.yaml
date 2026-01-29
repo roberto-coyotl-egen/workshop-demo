@@ -45,7 +45,10 @@ steps:
     waitFor: ['push-container']
 
   # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (The Proven Method)
+  # STAGE 3: AGENT ENGINE DEPLOY (Zero-Leak Template)
+  # =====================================================
+  - # =====================================================
+  # STAGE 3: AGENT ENGINE DEPLOY (ADK-Native Flags)
   # =====================================================
   - name: 'python:3.11' 
     id: 'deploy-agent-engine'
@@ -53,16 +56,26 @@ steps:
     args:
       - '-c'
       - |
+        echo "🔹 [Stage 3] Installing ADK..."
         pip install google-adk
-        # Use the shared file + inject the ID via the command line directly
+
+        echo "🔹 [Stage 3] Deploying with repository config files..."
+        # We use the flags supported by google-adk 1.23.0
+        # The tool will automatically pick up your .env and requirements.txt
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
           --region us-central1 \
           --display_name "Brady Logistics Agent" \
-          --env_file .env.shared \
-          --set-env-vars GCP_PROJECT_ID=$PROJECT_ID \
+          --env_file .env \
+          --requirements_file requirements.txt \
           --trace_to_cloud
 
     waitFor: ['run-eval-tests']
+
+# IMPORTANT: These placeholders allow the build to pass locally,
+# but you should set the REAL values in the Cloud Build Console Trigger.
+substitutions:
+  _STAGING_BUCKET: "gs://PLACEHOLDER_BUCKET"
+  _AGENT_ID: "projects/PLACEHOLDER/locations/PLACEHOLDER/reasoningEngines/PLACEHOLDER"
 
 timeout: '1200s'
