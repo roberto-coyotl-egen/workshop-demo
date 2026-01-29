@@ -36,16 +36,22 @@ steps:
       - '--set-env-vars=GCP_PROJECT_ID=$PROJECT_ID'
     waitFor: ['push-container']
 
-  # STAGE 3: AGENT ENGINE DEPLOY
+# =====================================================
+  # STAGE 3: AGENT ENGINE DEPLOY (The MacBook-Mimic Version)
+  # =====================================================
   - name: 'python:3.11'
     id: 'deploy-agent-engine'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        pip install google-adk
-        echo "opentelemetry-sdk" >> requirements.txt
-        echo "opentelemetry-exporter-google-cloud" >> requirements.txt
+        # 1. Install ADK
+        pip install google-adk --quiet
+        
+        # 2. Check files to ensure we are where we think we are
+        ls -R
+        
+        # 3. Deploy exactly like your Mac, using './' to fix pathing
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
           --region us-central1 \
@@ -53,7 +59,10 @@ steps:
           --env_file .env \
           --requirements_file requirements.txt \
           --trace_to_cloud
-    waitFor: ['run-eval-tests']
+    # No waitFor needed if you want this to run immediately
 
 options:
   logging: CLOUD_LOGGING_ONLY
+
+
+
