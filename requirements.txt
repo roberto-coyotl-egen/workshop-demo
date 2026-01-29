@@ -4,3 +4,4 @@ google-adk
 
 flask
 gunicorn
+opentelemetry-sdk

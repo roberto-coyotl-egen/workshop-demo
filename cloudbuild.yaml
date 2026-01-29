@@ -45,7 +45,7 @@ steps:
     waitFor: ['push-container']
 
   # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (Clean & Simple)
+  # STAGE 3: AGENT ENGINE DEPLOY (The Proven Method)
   # =====================================================
   - name: 'python:3.11' 
     id: 'deploy-agent-engine'
@@ -55,16 +55,17 @@ steps:
       - |
         echo "🔹 [Stage 3] Installing ADK..."
         pip install google-adk
-        
-        # We still add these to ensure the agent has the power to send data
-        echo "opentelemetry-sdk" >> requirements.txt
-        echo "opentelemetry-exporter-google-cloud" >> requirements.txt
 
-        echo "🔹 [Stage 3] Deploying using local .env..."
+        echo "🔹 [Stage 3] Deploying using root config files..."
+        # We use the exact flags that worked for you manually.
+        # Cloud Build automatically provides the $PROJECT_ID.
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
           --region us-central1 \
-          --display_name "Brady Logistics Agent"
+          --display_name "Brady Logistics Agent" \
+          --env_file .env \
+          --requirements_file requirements.txt \
+          --trace_to_cloud
 
     waitFor: ['run-eval-tests']
 
