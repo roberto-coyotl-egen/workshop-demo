@@ -33,8 +33,8 @@ steps:
       - '--clear-base-image'
     waitFor: ['run-eval-tests']
 
-# =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (Corrected Path)
+  # =====================================================
+  # STAGE 3: AGENT ENGINE DEPLOY (Fixed Library & Import)
   # =====================================================
   - name: 'python:3.11' 
     id: 'deploy-agent-engine'
@@ -45,29 +45,38 @@ steps:
     args:
       - '-c'
       - |
-        echo "🔹 [Stage 3] Installing Deploy Dependencies..."
-        pip install google-cloud-aiplatform google-adk python-dotenv
+        echo "🔹 [Stage 3] Installing LATEST Deploy Dependencies..."
+        # CRITICAL FIX 1: We force upgrade to get 'reasoning_engines' support
+        pip install --upgrade "google-cloud-aiplatform[reasoningengine,langchain]" google-adk python-dotenv
 
         echo "🔹 [Stage 3] Generating Deploy Script..."
         cat <<EOF > run_deploy.py
         import os
         from google.cloud import aiplatform
+        import vertexai
         
-        # FIX: Import from the folder 'brady_agent' seen in your screenshot
+        # CRITICAL FIX 2: Import from 'vertexai.preview' where this feature actually lives
+        from vertexai.preview import reasoning_engines
+
+        # Import from the specific folder 'brady_agent'
         from brady_agent.agent import root_agent 
 
         project_id = os.environ.get("GCP_PROJECT_ID")
         location = os.environ.get("REGION", "us-central1")
 
         print(f"🚀 Connecting to Vertex AI in {project_id}...")
-        aiplatform.init(project=project_id, location=location)
+        vertexai.init(project=project_id, location=location)
 
         print("🚀 Deploying 'brady_agent' with Telemetry ENABLED...")
         
-        # We deploy the 'root_agent' object we just imported
-        remote_agent = aiplatform.reasoning_engines.ReasoningEngine.create(
+        # Use the imported 'reasoning_engines' module directly
+        remote_agent = reasoning_engines.ReasoningEngine.create(
             root_agent,
-            requirements=["google-cloud-aiplatform", "python-dotenv", "google-adk"],
+            requirements=[
+                "google-cloud-aiplatform[reasoningengine,langchain]", 
+                "python-dotenv", 
+                "google-adk"
+            ],
             display_name="Brady Logistics Agent",
             description="Logistics assistant (Observability Enabled)",
             
