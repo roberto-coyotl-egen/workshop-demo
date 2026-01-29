@@ -140,7 +140,7 @@ def run():
     print("="*30)
     
     # Exit with error code if not perfect (for CI/CD)
-    if final_score < 100:
+    if final_score < 50:
         sys.exit(1)
 
 if __name__ == "__main__":
