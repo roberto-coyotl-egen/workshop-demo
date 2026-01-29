@@ -34,7 +34,7 @@ steps:
     waitFor: ['run-eval-tests']
 
   # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (SaaS)
+  # STAGE 3: AGENT ENGINE DEPLOY (Fixed with Telemetry)
   # =====================================================
   - name: 'python:3.11' 
     id: 'deploy-agent-engine'
@@ -45,20 +45,42 @@ steps:
     args:
       - '-c'
       - |
-        echo "🔹 [Stage 3] Installing ADK..."
-        pip install google-adk
-        
-        echo "🔹 [Stage 3] Configuring Telemetry..."
-        # CRITICAL FIX: Bake variables into the .env file so the Agent receives them
-        echo "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=true" >> .env
-        echo "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true" >> .env
-        
-        echo "🔹 [Stage 3] Deploying to Vertex AI Agent Engine..."
-        adk deploy agent_engine brady_agent \
-          --project $PROJECT_ID \
-          --region us-central1 \
-          --display_name "Brady Logistics Agent (v$BUILD_ID)"
+        echo "🔹 [Stage 3] Installing Deploy Dependencies..."
+        # We need the SDK to run the custom deploy script
+        pip install google-cloud-aiplatform google-adk python-dotenv
+
+        echo "🔹 [Stage 3] Generating Custom Deploy Script..."
+        # We create a python script on the fly to gain full control over 'env_vars'
+        cat <<EOF > run_deploy.py
+        import os
+        from google.cloud import aiplatform
+        # Import your agent object. 
+        # ASSUMPTION: Your file is 'agent.py' and variable is 'root_agent'
+        from agent import root_agent 
+
+        project_id = os.environ.get("GCP_PROJECT_ID")
+        location = os.environ.get("REGION", "us-central1")
+
+        print(f"🚀 Connecting to Vertex AI in {project_id}...")
+        aiplatform.init(project=project_id, location=location)
+
+        print("🚀 Deploying Agent with Telemetry ENABLED...")
+        remote_agent = aiplatform.reasoning_engines.ReasoningEngine.create(
+            root_agent,
+            requirements=["google-cloud-aiplatform", "python-dotenv", "google-adk"],
+            display_name="Brady Logistics Agent",
+            description="Logistics assistant deployed via Cloud Build",
+            
+            # 👇 THIS IS THE INFRASTRUCTURE SWITCH 👇
+            env_vars={
+                "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY": "true",
+                "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT": "true"
+            }
+        )
+        print(f"✅ Deployment Complete! Resource: {remote_agent.resource_name}")
+        EOF
+
+        echo "🔹 [Stage 3] Executing Deployment..."
+        python3 run_deploy.py
 
     waitFor: ['run-eval-tests']
-
-timeout: '900s'
