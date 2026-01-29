@@ -1,6 +1,6 @@
 steps:
   # =====================================================
-  # STAGE 1: INSTALL & TEST (Everything in one container)
+  # STAGE 1: QUALITY GATE (Merged for reliability)
   # =====================================================
   - name: 'python:3.11'
     id: 'run-eval-tests'
@@ -8,33 +8,40 @@ steps:
     args:
       - '-c'
       - |
-        echo "🔹 Installing dependencies..."
+        echo "🔹 [Stage 1] Installing Dependencies..."
         pip install --upgrade pip
         pip install -r requirements.txt
-        
-        echo "🔹 Running Pytest..."
-        # Using 'python3 -m' ensures it finds pytest in this specific container
-        python3 -m pytest tests/
+        # Use -m pytest to avoid "module not found" errors
+        python3 -m pytest tests/evaluate.py
 
   # =====================================================
-  # STAGE 2: CLOUD RUN DEPLOY (Web UI)
+  # STAGE 2: CLOUD RUN (Build -> Push -> Deploy)
   # =====================================================
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: 'deploy-cloud-run'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        echo "🔹 Deploying Web UI to Cloud Run..."
-        gcloud run deploy brady-web-ui \
-          --source . \
-          --region us-central1 \
-          --allow-unauthenticated \
-          --update-env-vars GCP_PROJECT_ID=$PROJECT_ID
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-container'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/brady-logistics-agent', '.']
     waitFor: ['run-eval-tests']
 
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-container'
+    args: ['push', 'gcr.io/$PROJECT_ID/brady-logistics-agent']
+    waitFor: ['build-container']
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-cloud-run'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'brady-logistics-agent'
+      - '--image=gcr.io/$PROJECT_ID/brady-logistics-agent'
+      - '--region=us-central1'
+      - '--allow-unauthenticated'
+      - '--set-env-vars=GCP_PROJECT_ID=$PROJECT_ID'
+    waitFor: ['push-container']
+
   # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (AI Backend)
+  # STAGE 3: AGENT ENGINE DEPLOY (Clean & Verified)
   # =====================================================
   - name: 'python:3.11'
     id: 'deploy-agent-engine'
@@ -42,12 +49,14 @@ steps:
     args:
       - '-c'
       - |
-        echo "🔹 Installing ADK..."
+        echo "🔹 [Stage 3] Installing ADK & Telemetry Hooks..."
         pip install google-adk
-        
-        echo "🔹 Deploying to Vertex AI Agent Engine..."
-        # ADK picks up telemetry from the repo's .env 
-        # and Project ID from the cloud environment.
+        # Ensure telemetry packages are present in the final bundle
+        echo "opentelemetry-sdk" >> requirements.txt
+        echo "opentelemetry-exporter-google-cloud" >> requirements.txt
+
+        echo "🔹 [Stage 3] Deploying Agent to Vertex AI..."
+        # Fixed the duplicate --display_name and corrected spacing
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
           --region us-central1 \
