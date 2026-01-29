@@ -43,7 +43,7 @@ steps:
     waitFor: ['push-container']
 
   # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (The Verified Method)
+  # STAGE 3: AGENT ENGINE DEPLOY (Clean & Simple)
   # =====================================================
   - name: 'python:3.11'
     id: 'deploy-agent-engine'
@@ -53,19 +53,17 @@ steps:
       - |
         echo "🔹 [Stage 3] Installing ADK & Telemetry..."
         pip install google-adk
-        # Adding telemetry hooks dynamically to ensure they travel with the bundle
+        
+        # We still add these to ensure the agent has the power to send data
         echo "opentelemetry-sdk" >> requirements.txt
         echo "opentelemetry-exporter-google-cloud" >> requirements.txt
 
-        echo "🔹 [Stage 3] Deploying to Vertex AI..."
-        # Note: Fixed the duplicate --display_name and corrected syntax
+        echo "🔹 [Stage 3] Deploying using local .env..."
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
           --region us-central1 \
-          --display_name "Brady Logistics Agent" \
-          --env_file .env \
-          --requirements_file requirements.txt \
-          --trace_to_cloud
+          --display_name "Brady Logistics Agent"
+
     waitFor: ['run-eval-tests']
 
 options:
