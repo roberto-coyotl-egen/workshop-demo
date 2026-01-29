@@ -1,6 +1,6 @@
 steps:
   # =====================================================
-  # STAGE 1: QUALITY GATE (Run the Tests)
+  # STAGE 1: QUALITY GATE
   # =====================================================
   - name: 'python:3.11'
     id: 'run-eval-tests'
@@ -12,13 +12,25 @@ steps:
       - |
         echo "🔹 [Stage 1] Installing Dependencies..."
         pip install -r requirements.txt
-        
-        echo "🔹 [Stage 1] Running Evaluation Loop..."
         python3 tests/evaluate.py
 
   # =====================================================
-  # STAGE 2: CLOUD RUN DEPLOY (Web App)
+  # STAGE 2: CLOUD RUN (Build -> Push -> Deploy)
   # =====================================================
+  
+  # 2a. Build the Docker Image explicitly
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-container'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/brady-logistics-agent', '.']
+    waitFor: ['run-eval-tests']
+
+  # 2b. Push the Image to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-container'
+    args: ['push', 'gcr.io/$PROJECT_ID/brady-logistics-agent']
+    waitFor: ['build-container']
+
+  # 2c. Deploy the Pre-Built Image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'deploy-cloud-run'
     entrypoint: 'gcloud'
@@ -26,46 +38,45 @@ steps:
       - 'run'
       - 'deploy'
       - 'brady-logistics-agent'
-      - '--source=.'
+      - '--image=gcr.io/$PROJECT_ID/brady-logistics-agent'  # <--- Use the image we just built
       - '--region=us-central1'
       - '--allow-unauthenticated'
       - '--set-env-vars=GCP_PROJECT_ID=$PROJECT_ID'
-      - '--clear-base-image'
-    waitFor: ['run-eval-tests']
+    waitFor: ['push-container']
 
   # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (Working ADK + Telemetry)
+  # STAGE 3: AGENT ENGINE DEPLOY (Telemetry Enabled)
   # =====================================================
   - name: 'python:3.11' 
     id: 'deploy-agent-engine'
     entrypoint: 'bash'
-    # We use the built-in PROJECT_ID directly, no custom env vars.
+    # We use the standard PROJECT_ID
+    env:
+      - 'PROJECT_ID=$PROJECT_ID' 
     args:
       - '-c'
       - |
         echo "🔹 [Stage 3] Installing ADK..."
         pip install google-adk
 
-        # --- STEP 1: Add Telemetry Deps ---
-        echo "🔹 [Stage 3] Adding Telemetry libraries..."
+        # --- FIX 1: Add Telemetry Deps ---
         echo "opentelemetry-sdk" >> requirements.txt
         echo "opentelemetry-exporter-google-cloud" >> requirements.txt
 
-        # --- STEP 2: Inject Config (The "Patch") ---
+        # --- FIX 2: Inject Config (The Patch) ---
         echo "🔹 [Stage 3] Configuring Agent for Telemetry..."
-        # We use sed to insert lines at the top of the file (Line 1).
-        # We use the built-in $PROJECT_ID variable.
         sed -i "1s|^|import os\nos.environ['GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY'] = 'true'\nos.environ['OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT'] = 'true'\n|" brady_agent/agent.py
 
-        # --- STEP 3: Deploy (Your Working Command) ---
+        # --- FIX 3: Deploy with ADK ---
         echo "🔹 [Stage 3] Deploying to Vertex AI..."
         
-        # We use the standard $PROJECT_ID provided by Cloud Build
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
           --region us-central1 \
-          --display_name "Brady Logistics Agent (v$BUILD_ID)"
+          --display_name "Brady Logistics Agent (Observability Enabled)"
 
+    # Use 'deploy-cloud-run' here to ensure sequential ordering, 
+    # or 'run-eval-tests' if you want them to run in parallel.
     waitFor: ['run-eval-tests']
 
-timeout: '900s'
+timeout: '1200s'
