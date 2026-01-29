@@ -34,7 +34,7 @@ steps:
     waitFor: ['run-eval-tests']
 
   # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (Fixed Library & Import)
+  # STAGE 3: AGENT ENGINE DEPLOY (Fixed with Telemetry)
   # =====================================================
   - name: 'python:3.11' 
     id: 'deploy-agent-engine'
@@ -46,19 +46,16 @@ steps:
       - '-c'
       - |
         echo "🔹 [Stage 3] Installing LATEST Deploy Dependencies..."
-        # CRITICAL FIX 1: We force upgrade to get 'reasoning_engines' support
+        # We force upgrade to ensure we have the AdkApp wrapper support
         pip install --upgrade "google-cloud-aiplatform[reasoningengine,langchain]" google-adk python-dotenv
 
         echo "🔹 [Stage 3] Generating Deploy Script..."
         cat <<EOF > run_deploy.py
         import os
-        from google.cloud import aiplatform
         import vertexai
-        
-        # CRITICAL FIX 2: Import from 'vertexai.preview' where this feature actually lives
         from vertexai.preview import reasoning_engines
-
-        # Import from the specific folder 'brady_agent'
+        
+        # Correctly importing from your folder structure
         from brady_agent.agent import root_agent 
 
         project_id = os.environ.get("GCP_PROJECT_ID")
@@ -67,24 +64,30 @@ steps:
         print(f"🚀 Connecting to Vertex AI in {project_id}...")
         vertexai.init(project=project_id, location=location)
 
-        print("🚀 Deploying 'brady_agent' with Telemetry ENABLED...")
+        # --- TELEMETRY FIX ---
+        # We wrap the agent in an AdkApp with enable_tracing=True.
+        # This automatically sets up the observability sidecars.
         
-        # Use the imported 'reasoning_engines' module directly
+        print("🛠️  Wrapping agent in AdkApp for Telemetry...")
+        
+        if isinstance(root_agent, reasoning_engines.AdkApp):
+            agent_to_deploy = root_agent
+        else:
+            agent_to_deploy = reasoning_engines.AdkApp(
+                agent=root_agent, 
+                enable_tracing=True
+            )
+
+        print("🚀 Deploying to Vertex AI...")
         remote_agent = reasoning_engines.ReasoningEngine.create(
-            root_agent,
+            agent_to_deploy,
             requirements=[
                 "google-cloud-aiplatform[reasoningengine,langchain]", 
                 "python-dotenv", 
                 "google-adk"
             ],
             display_name="Brady Logistics Agent",
-            description="Logistics assistant (Observability Enabled)",
-            
-            # INFRASTRUCTURE SWITCH FOR TELEMETRY
-            env_vars={
-                "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY": "true",
-                "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT": "true"
-            }
+            description="Logistics assistant (Observability Enabled)"
         )
         print(f"✅ Deployment Complete! Resource: {remote_agent.resource_name}")
         EOF
@@ -93,3 +96,5 @@ steps:
         python3 run_deploy.py
 
     waitFor: ['run-eval-tests']
+
+timeout: '900s'
