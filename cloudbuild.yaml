@@ -6,7 +6,6 @@ steps:
     args:
       - '-c'
       - |
-        pip install --upgrade pip
         pip install -r requirements.txt
         python3 -m pytest tests/evaluate.py
 
