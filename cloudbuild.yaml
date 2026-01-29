@@ -1,67 +1,42 @@
 steps:
   # =====================================================
-  # STAGE 1: QUALITY GATE
+  # STAGE 1: EVALUATION TESTS
   # =====================================================
   - name: 'python:3.11'
     id: 'run-eval-tests'
     entrypoint: 'bash'
-    env:
-      - 'GCP_PROJECT_ID=$PROJECT_ID'
     args:
       - '-c'
       - |
-        echo "🔹 [Stage 1] Installing Dependencies..."
+        echo "🔹 Running Pytest..."
         pip install -r requirements.txt
-        python3 tests/evaluate.py
+        python3 -m pytest tests/
 
   # =====================================================
-  # STAGE 2: CLOUD RUN (Build -> Push -> Deploy)
+  # STAGE 2: BUILD WEB APP CONTAINER
   # =====================================================
-  
-  # 2a. Build the Docker Image explicitly
   - name: 'gcr.io/cloud-builders/docker'
     id: 'build-container'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/brady-logistics-agent', '.']
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/brady-web-app', '.']
     waitFor: ['run-eval-tests']
 
-  # 2b. Push the Image to Google Container Registry
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'push-container'
-    args: ['push', 'gcr.io/$PROJECT_ID/brady-logistics-agent']
-    waitFor: ['build-container']
-
-  # 2c. Deploy the Pre-Built Image to Cloud Run
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: 'deploy-cloud-run'
-    entrypoint: 'gcloud'
-    args:
-      - 'run'
-      - 'deploy'
-      - 'brady-logistics-agent'
-      - '--image=gcr.io/$PROJECT_ID/brady-logistics-agent'  # <--- Use the image we just built
-      - '--region=us-central1'
-      - '--allow-unauthenticated'
-      - '--set-env-vars=GCP_PROJECT_ID=$PROJECT_ID'
-    waitFor: ['push-container']
-
   # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (Zero-Leak Template)
+  # STAGE 3: AGENT ENGINE DEPLOY (Elegant & Isolated)
   # =====================================================
-  - # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (ADK-Native Flags)
-  # =====================================================
-  - name: 'python:3.11' 
+  - name: 'python:3.11'
     id: 'deploy-agent-engine'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        echo "🔹 [Stage 3] Installing ADK..."
+        echo "🔹 Installing ADK..."
         pip install google-adk
-
-        echo "🔹 [Stage 3] Deploying with repository config files..."
-        # We use the flags supported by google-adk 1.23.0
-        # The tool will automatically pick up your .env and requirements.txt
+        
+        echo "🔹 Deploying Agent Engine to $PROJECT_ID..."
+        
+        # We explicitly use the .env from the repo.
+        # It never sees your private .env.local because that's not in Git.
+        # ADK version 1.23+ handles the project ID automatically from the environment.
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
           --region us-central1 \
@@ -72,10 +47,7 @@ steps:
 
     waitFor: ['run-eval-tests']
 
-# IMPORTANT: These placeholders allow the build to pass locally,
-# but you should set the REAL values in the Cloud Build Console Trigger.
-substitutions:
-  _STAGING_BUCKET: "gs://PLACEHOLDER_BUCKET"
-  _AGENT_ID: "projects/PLACEHOLDER/locations/PLACEHOLDER/reasoningEngines/PLACEHOLDER"
-
-timeout: '1200s'
+# No substitutions needed for the project ID as it's built-in.
+# You can add other custom variables here if needed later.
+options:
+  logging: CLOUD_LOGGING_ONLY
