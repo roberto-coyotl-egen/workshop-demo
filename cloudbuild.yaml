@@ -53,18 +53,14 @@ steps:
     args:
       - '-c'
       - |
-        echo "🔹 [Stage 3] Installing ADK..."
         pip install google-adk
-
-        echo "🔹 [Stage 3] Deploying using root config files..."
-        # We use the exact flags that worked for you manually.
-        # Cloud Build automatically provides the $PROJECT_ID.
+        # Use the shared file + inject the ID via the command line directly
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
           --region us-central1 \
           --display_name "Brady Logistics Agent" \
-          --env_file .env \
-          --requirements_file requirements.txt \
+          --env_file .env.shared \
+          --set-env-vars GCP_PROJECT_ID=$PROJECT_ID \
           --trace_to_cloud
 
     waitFor: ['run-eval-tests']
