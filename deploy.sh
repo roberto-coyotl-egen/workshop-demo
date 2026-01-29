@@ -5,19 +5,15 @@
 # Usage: ./deploy.sh "Commit Message"
 # ==========================================
 
-# 1. Load Environment Variables (Project ID)
-if [ -f .env ]; then
-    export $(cat .env | xargs)
-fi
+# 1. CONFIGURATION
+export GCP_PROJECT_ID="gen-ai-accel-dev"
+export REGION="us-central1"
 
-# Hardcoded Configuration
-STAGING_BUCKET="gs://adk_agent_enging_staging"  # <--- FIXED HERE
-REGION="us-central1"
-
-if [ -z "$GCP_PROJECT_ID" ]; then
-    echo "❌ Error: GCP_PROJECT_ID is missing in .env"
-    exit 1
-fi
+# --- NEW: TELEMETRY & OBSERVABILITY (From Screenshot) ---
+# Enables traces and logs for debugging
+export GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=true
+# Enables logging of prompt text (Inputs/Outputs)
+export OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true
 
 # 2. Grab Commit Message
 MSG="$1"
@@ -29,12 +25,14 @@ echo "========================================"
 echo "🕵️  PHASE 1: QUALITY GATE (Running Tests)"
 echo "========================================"
 
-python3 tests/evaluate.py
+# We pass the project ID explicitly to Python
+GCP_PROJECT_ID=$GCP_PROJECT_ID python3 tests/evaluate.py
 TEST_EXIT_CODE=$?
 
 if [ $TEST_EXIT_CODE -ne 0 ]; then
     echo ""
     echo "❌ TESTS FAILED. Aborting deployment."
+    echo "   (Check the logs above for details)"
     exit 1
 fi
 
@@ -52,7 +50,9 @@ if [[ `git status --porcelain` ]]; then
     git push origin main
     echo "✅ Pushed to GitHub -> Triggering Cloud Build."
 else
-    echo "⚠️  No changes to commit. Skipping Git Push."
+    echo "⚠️  No local changes. Pushing empty commit to trigger build..."
+    git commit --allow-empty -m "Trigger Build: $MSG"
+    git push origin main
 fi
 
 echo ""
@@ -61,20 +61,19 @@ echo "🧠 PHASE 3: VERTEX AI AGENT ENGINE DEPLOY"
 echo "========================================"
 
 echo "🚀 Deploying 'brady_agent' to Vertex AI..."
-echo "   Target Bucket: $STAGING_BUCKET"
+echo "   Project: $GCP_PROJECT_ID"
+echo "   Telemetry: ENABLED"
 
-# The ADK command to deploy to the managed engine
+# UPDATED: The ADK will pick up the exported telemetry variables above
 adk deploy agent_engine brady_agent \
     --project "$GCP_PROJECT_ID" \
     --region "$REGION" \
-    --staging_bucket "$STAGING_BUCKET" \
     --display_name "Brady Logistics Agent"
 
 if [ $? -eq 0 ]; then
     echo "✅ Agent Engine Deployment Complete!"
 else
     echo "❌ Agent Engine Deployment Failed."
-    # Don't exit 1 here so we can still see the Cloud Build URL below if that part worked
 fi
 
 echo ""
