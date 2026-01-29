@@ -27,35 +27,35 @@ steps:
       - 'deploy'
       - 'brady-logistics-agent'
       - '--source=.'
-      - '--region=us-central1'
+      - '--region=us-central1' # <--- Hardcoded here to be safe
       - '--allow-unauthenticated'
       - '--set-env-vars=GCP_PROJECT_ID=$PROJECT_ID'
     waitFor: ['run-eval-tests']
 
   # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (Vertex AI SaaS)
+  # STAGE 3: AGENT ENGINE DEPLOY (SaaS)
   # =====================================================
-  - name: 'python:3.11'
+  # Note: Switched back to standard python image to avoid registry issues for now.
+  # If you built the builder image, you can change 'name' back.
+  - name: 'python:3.11' 
     id: 'deploy-agent-engine'
     entrypoint: 'bash'
     env:
       - 'GCP_PROJECT_ID=$PROJECT_ID'
-      - 'REGION=us-central1'
-      # Telemetry Variables
+      # We define REGION here as a regular environment variable
+      - 'MY_DEPLOY_REGION=us-central1' 
       - 'GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=true'
       - 'OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true'
     args:
       - '-c'
       - |
         echo "🔹 [Stage 3] Installing ADK..."
-        # Install the Google Agent Development Kit
         pip install google-adk
         
         echo "🔹 [Stage 3] Deploying to Vertex AI Agent Engine..."
-        # Run the deployment command
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
-          --region $REGION \
+          --region $MY_DEPLOY_REGION \
           --display_name "Brady Logistics Agent"
 
     waitFor: ['run-eval-tests']
