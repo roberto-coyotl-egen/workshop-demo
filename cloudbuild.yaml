@@ -3,11 +3,14 @@ steps:
   - name: 'python:3.11'
     id: 'run-eval-tests'
     entrypoint: 'bash'
+    env:
+      - 'GCP_PROJECT_ID=$PROJECT_ID'
     args:
       - '-c'
       - |
+        echo "🔹 [Stage 1] Installing Dependencies..."
         pip install -r requirements.txt
-        python3 -m pytest tests/evaluate.py
+        python3 tests/evaluate.py
 
   # STAGE 2: CLOUD RUN (Build -> Push -> Deploy)
   - name: 'gcr.io/cloud-builders/docker'
