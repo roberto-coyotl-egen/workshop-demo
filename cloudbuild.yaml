@@ -1,6 +1,6 @@
 steps:
   # =====================================================
-  # STAGE 1: INSTALL & TEST (All-in-one to avoid path errors)
+  # STAGE 1: INSTALL & TEST (Everything in one container)
   # =====================================================
   - name: 'python:3.11'
     id: 'run-eval-tests'
@@ -13,11 +13,28 @@ steps:
         pip install -r requirements.txt
         
         echo "🔹 Running Pytest..."
-        # Using 'python3 -m' is the secret to making pytest work in Cloud Build
+        # Using 'python3 -m' ensures it finds pytest in this specific container
         python3 -m pytest tests/
 
   # =====================================================
-  # STAGE 2: AGENT ENGINE DEPLOY (Pure & Simple)
+  # STAGE 2: CLOUD RUN DEPLOY (Web UI)
+  # =====================================================
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-cloud-run'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🔹 Deploying Web UI to Cloud Run..."
+        gcloud run deploy brady-web-ui \
+          --source . \
+          --region us-central1 \
+          --allow-unauthenticated \
+          --update-env-vars GCP_PROJECT_ID=$PROJECT_ID
+    waitFor: ['run-eval-tests']
+
+  # =====================================================
+  # STAGE 3: AGENT ENGINE DEPLOY (AI Backend)
   # =====================================================
   - name: 'python:3.11'
     id: 'deploy-agent-engine'
@@ -28,9 +45,9 @@ steps:
         echo "🔹 Installing ADK..."
         pip install google-adk
         
-        echo "🔹 Deploying Agent Engine to $PROJECT_ID..."
-        # This uses your repo's .env for telemetry 
-        # and $PROJECT_ID for the cloud destination.
+        echo "🔹 Deploying to Vertex AI Agent Engine..."
+        # ADK picks up telemetry from the repo's .env 
+        # and Project ID from the cloud environment.
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
           --region us-central1 \
@@ -38,7 +55,6 @@ steps:
           --env_file .env \
           --requirements_file requirements.txt \
           --trace_to_cloud
-
     waitFor: ['run-eval-tests']
 
 options:
