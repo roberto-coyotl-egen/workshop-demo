@@ -34,54 +34,53 @@ steps:
     waitFor: ['run-eval-tests']
 
   # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (Hardcoded Region & Fixes)
+  # STAGE 3: AGENT ENGINE DEPLOY (Simplified & Robust)
   # =====================================================
   - name: 'python:3.11' 
     id: 'deploy-agent-engine'
     entrypoint: 'bash'
     env:
       - 'GCP_PROJECT_ID=$PROJECT_ID'
-      # Removed 'REGION' env var to fix the substitution error
     args:
       - '-c'
       - |
-        echo "🔹 [Stage 3] Installing LATEST Deploy Dependencies..."
+        echo "🔹 [Stage 3] Installing Dependencies..."
         pip install --upgrade "google-cloud-aiplatform[reasoningengine,langchain]" google-adk python-dotenv
 
-        # --- 1. PREPARE THE BUCKET ---
-        echo "🔹 [Stage 3] Ensuring bucket exists: gs://adk_agent_engine_staging"
-        # Hardcoded region 'us-central1'
+        echo "🔹 [Stage 3] Creating Bucket..."
+        # Hardcoded bucket and region: simple and reliable.
         gcloud storage buckets create gs://adk_agent_engine_staging --location=us-central1 --uniform-bucket-level-access || true
 
-        # --- 2. CODE INJECTION (THE CRASH FIX) ---
-        echo "🔹 [Stage 3] Patching agent.py to initialize Vertex AI immediately..."
-        
-        # We inject hardcoded 'us-central1' directly into the patch
-        PYTHON_PATCH="import os\nimport vertexai\nvertexai.init(project='$PROJECT_ID', location='us-central1')\nos.environ['GCP_PROJECT_ID'] = '$PROJECT_ID'\nos.environ['GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY'] = 'true'\nos.environ['OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT'] = 'true'\n"
-        
-        sed -i "1s|^|$PYTHON_PATCH|" brady_agent/agent.py
-        
-        head -n 8 brady_agent/agent.py
-
-        echo "🔹 [Stage 3] Generating Deploy Script..."
-        cat <<EOF > run_deploy.py
+        echo "🔹 [Stage 3] Patching Agent Code..."
+        # We create a header file with the initialization code.
+        # This injects the Project ID and Telemetry flags directly into the agent.
+        cat <<EOF > header.py
         import os
         import vertexai
-        from vertexai.preview import reasoning_engines
         
-        # Import the now-patched agent
+        # 1. Initialize Vertex AI immediately (Prevents Import Crash)
+        vertexai.init(project='$PROJECT_ID', location='us-central1')
+        
+        # 2. Set Environment Variables (Enables Telemetry)
+        os.environ['GCP_PROJECT_ID'] = '$PROJECT_ID'
+        os.environ['GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY'] = 'true'
+        os.environ['OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT'] = 'true'
+        EOF
+
+        # Merge header + original file -> overwrite original agent.py
+        cat header.py brady_agent/agent.py > brady_agent/agent_temp.py
+        mv brady_agent/agent_temp.py brady_agent/agent.py
+
+        echo "🔹 [Stage 3] Deploying..."
+        cat <<EOF > run_deploy.py
+        import vertexai
+        from vertexai.preview import reasoning_engines
         from brady_agent.agent import root_agent 
 
-        project_id = os.environ.get("GCP_PROJECT_ID")
-        # Hardcoded region
-        location = "us-central1"
-        staging_bucket = "gs://adk_agent_engine_staging"
-
-        print(f"🚀 Connecting to Vertex AI in {project_id}...")
-        vertexai.init(project=project_id, location=location, staging_bucket=staging_bucket)
+        # Re-init for the deploy script itself so it can upload the code
+        vertexai.init(project='$PROJECT_ID', location='us-central1', staging_bucket='gs://adk_agent_engine_staging')
 
         print("🚀 Deploying to Vertex AI...")
-        
         remote_agent = reasoning_engines.ReasoningEngine.create(
             root_agent,
             requirements=[
@@ -97,7 +96,6 @@ steps:
         print(f"✅ Deployment Complete! Resource: {remote_agent.resource_name}")
         EOF
 
-        echo "🔹 [Stage 3] Executing Deployment..."
         python3 run_deploy.py
 
     waitFor: ['run-eval-tests']
