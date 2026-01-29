@@ -34,14 +34,14 @@ steps:
     waitFor: ['run-eval-tests']
 
   # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (The Fix)
+  # STAGE 3: AGENT ENGINE DEPLOY (Hardcoded Region & Fixes)
   # =====================================================
   - name: 'python:3.11' 
     id: 'deploy-agent-engine'
     entrypoint: 'bash'
     env:
       - 'GCP_PROJECT_ID=$PROJECT_ID'
-      - 'REGION=us-central1' 
+      # Removed 'REGION' env var to fix the substitution error
     args:
       - '-c'
       - |
@@ -50,19 +50,17 @@ steps:
 
         # --- 1. PREPARE THE BUCKET ---
         echo "🔹 [Stage 3] Ensuring bucket exists: gs://adk_agent_engine_staging"
-        gcloud storage buckets create gs://adk_agent_engine_staging --location=$REGION --uniform-bucket-level-access || true
+        # Hardcoded region 'us-central1'
+        gcloud storage buckets create gs://adk_agent_engine_staging --location=us-central1 --uniform-bucket-level-access || true
 
         # --- 2. CODE INJECTION (THE CRASH FIX) ---
         echo "🔹 [Stage 3] Patching agent.py to initialize Vertex AI immediately..."
         
-        # We inject this block at the top of the file.
-        # It forces vertexai.init() to run BEFORE any imports try to use the API.
-        PYTHON_PATCH="import os\nimport vertexai\nvertexai.init(project='$PROJECT_ID', location='$REGION')\nos.environ['GCP_PROJECT_ID'] = '$PROJECT_ID'\nos.environ['GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY'] = 'true'\nos.environ['OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT'] = 'true'\n"
+        # We inject hardcoded 'us-central1' directly into the patch
+        PYTHON_PATCH="import os\nimport vertexai\nvertexai.init(project='$PROJECT_ID', location='us-central1')\nos.environ['GCP_PROJECT_ID'] = '$PROJECT_ID'\nos.environ['GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY'] = 'true'\nos.environ['OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT'] = 'true'\n"
         
-        # Apply the patch to 'brady_agent/agent.py'
         sed -i "1s|^|$PYTHON_PATCH|" brady_agent/agent.py
         
-        # Debug: Print the first few lines to confirm the patch worked
         head -n 8 brady_agent/agent.py
 
         echo "🔹 [Stage 3] Generating Deploy Script..."
@@ -75,11 +73,11 @@ steps:
         from brady_agent.agent import root_agent 
 
         project_id = os.environ.get("GCP_PROJECT_ID")
-        location = os.environ.get("REGION", "us-central1")
+        # Hardcoded region
+        location = "us-central1"
         staging_bucket = "gs://adk_agent_engine_staging"
 
         print(f"🚀 Connecting to Vertex AI in {project_id}...")
-        # Re-init in the deploy script itself (good practice)
         vertexai.init(project=project_id, location=location, staging_bucket=staging_bucket)
 
         print("🚀 Deploying to Vertex AI...")
