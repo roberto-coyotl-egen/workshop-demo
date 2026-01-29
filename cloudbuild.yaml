@@ -41,7 +41,7 @@ steps:
     entrypoint: 'bash'
     env:
       - 'GCP_PROJECT_ID=$PROJECT_ID'
-      - 'MY_DEPLOY_REGION=us-central1' 
+      - 'REGION=us-central1' 
     args:
       - '-c'
       - |
@@ -56,7 +56,7 @@ steps:
         echo "🔹 [Stage 3] Deploying to Vertex AI Agent Engine..."
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
-          --region $MY_DEPLOY_REGION \
+          --region us-central1 \
           --display_name "Brady Logistics Agent (v$BUILD_ID)"
 
     waitFor: ['run-eval-tests']
