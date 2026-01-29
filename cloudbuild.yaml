@@ -30,9 +30,6 @@ steps:
       - '--region=us-central1'
       - '--allow-unauthenticated'
       - '--set-env-vars=GCP_PROJECT_ID=$PROJECT_ID'
-      # ---------------------------------------------------
-      # CRITICAL FIX: Clears conflict between Buildpacks & Dockerfile
-      # ---------------------------------------------------
       - '--clear-base-image'
     waitFor: ['run-eval-tests']
 
@@ -44,20 +41,23 @@ steps:
     entrypoint: 'bash'
     env:
       - 'GCP_PROJECT_ID=$PROJECT_ID'
-      - 'REGION=us-central1' 
-      - 'GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=true'
-      - 'OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true'
+      - 'MY_DEPLOY_REGION=us-central1' 
     args:
       - '-c'
       - |
         echo "🔹 [Stage 3] Installing ADK..."
         pip install google-adk
         
+        echo "🔹 [Stage 3] Configuring Telemetry..."
+        # CRITICAL FIX: Bake variables into the .env file so the Agent receives them
+        echo "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=true" >> .env
+        echo "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true" >> .env
+        
         echo "🔹 [Stage 3] Deploying to Vertex AI Agent Engine..."
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
-          --region us-central1 \
-          --display_name "Brady Logistics Agent"
+          --region $MY_DEPLOY_REGION \
+          --display_name "Brady Logistics Agent (v$BUILD_ID)"
 
     waitFor: ['run-eval-tests']
 
