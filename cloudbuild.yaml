@@ -6,21 +6,21 @@ steps:
     id: 'run-eval-tests'
     entrypoint: 'bash'
     env:
-      - 'GCP_PROJECT_ID=$PROJECT_ID'  # <--- Passes ID to the Test Runner
+      - 'GCP_PROJECT_ID=$PROJECT_ID'
     args:
       - '-c'
       - |
         echo "🔹 [Stage 1] Installing Dependencies..."
         pip install -r requirements.txt
-
+        
         echo "🔹 [Stage 1] Running Evaluation Loop..."
         python3 tests/evaluate.py
 
   # =====================================================
-  # STAGE 2: BUILD & DEPLOY (Only if Stage 1 passes)
+  # STAGE 2: CLOUD RUN DEPLOY (Web App)
   # =====================================================
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: 'deploy-agent'
+    id: 'deploy-cloud-run'
     entrypoint: 'gcloud'
     args:
       - 'run'
@@ -29,11 +29,35 @@ steps:
       - '--source=.'
       - '--region=us-central1'
       - '--allow-unauthenticated'
-      # ---------------------------------------------------
-      # CRITICAL FIX: Pass the Project ID to the live app
-      # ---------------------------------------------------
       - '--set-env-vars=GCP_PROJECT_ID=$PROJECT_ID'
-    
     waitFor: ['run-eval-tests']
 
-timeout: '600s'
+  # =====================================================
+  # STAGE 3: AGENT ENGINE DEPLOY (Vertex AI SaaS)
+  # =====================================================
+  - name: 'python:3.11'
+    id: 'deploy-agent-engine'
+    entrypoint: 'bash'
+    env:
+      - 'GCP_PROJECT_ID=$PROJECT_ID'
+      - 'REGION=us-central1'
+      # Telemetry Variables
+      - 'GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=true'
+      - 'OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true'
+    args:
+      - '-c'
+      - |
+        echo "🔹 [Stage 3] Installing ADK..."
+        # Install the Google Agent Development Kit
+        pip install google-adk
+        
+        echo "🔹 [Stage 3] Deploying to Vertex AI Agent Engine..."
+        # Run the deployment command
+        adk deploy agent_engine brady_agent \
+          --project $PROJECT_ID \
+          --region $REGION \
+          --display_name "Brady Logistics Agent"
+
+    waitFor: ['run-eval-tests']
+
+timeout: '900s'
