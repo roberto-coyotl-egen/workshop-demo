@@ -1,6 +1,6 @@
 steps:
   # =====================================================
-  # STAGE 1: QUALITY GATE (Merged for reliability)
+  # STAGE 1: QUALITY GATE (Merged for path safety)
   # =====================================================
   - name: 'python:3.11'
     id: 'run-eval-tests'
@@ -11,7 +11,9 @@ steps:
         echo "🔹 [Stage 1] Installing Dependencies..."
         pip install --upgrade pip
         pip install -r requirements.txt
-        # Use -m pytest to avoid "module not found" errors
+        
+        echo "🔹 [Stage 1] Running Tests..."
+        # Using 'python3 -m' ensures it finds pytest in the current environment
         python3 -m pytest tests/evaluate.py
 
   # =====================================================
@@ -41,7 +43,7 @@ steps:
     waitFor: ['push-container']
 
   # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (Clean & Verified)
+  # STAGE 3: AGENT ENGINE DEPLOY (The Verified Method)
   # =====================================================
   - name: 'python:3.11'
     id: 'deploy-agent-engine'
@@ -49,14 +51,14 @@ steps:
     args:
       - '-c'
       - |
-        echo "🔹 [Stage 3] Installing ADK & Telemetry Hooks..."
+        echo "🔹 [Stage 3] Installing ADK & Telemetry..."
         pip install google-adk
-        # Ensure telemetry packages are present in the final bundle
+        # Adding telemetry hooks dynamically to ensure they travel with the bundle
         echo "opentelemetry-sdk" >> requirements.txt
         echo "opentelemetry-exporter-google-cloud" >> requirements.txt
 
-        echo "🔹 [Stage 3] Deploying Agent to Vertex AI..."
-        # Fixed the duplicate --display_name and corrected spacing
+        echo "🔹 [Stage 3] Deploying to Vertex AI..."
+        # Note: Fixed the duplicate --display_name and corrected syntax
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
           --region us-central1 \
