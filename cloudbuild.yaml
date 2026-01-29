@@ -50,7 +50,7 @@ steps:
 
         # --- 1. CREATE BUCKET (HARDCODED) ---
         echo "🔹 [Stage 3] Ensuring bucket exists: gs://adk_agent_engine_staging"
-        gcloud storage buckets create gs://adk_agent_engine_staging --location=$REGION --uniform-bucket-level-access || true
+        gcloud storage buckets create gs://adk_agent_engine_staging --location=us-central1 --uniform-bucket-level-access || true
 
         echo "🔹 [Stage 3] Generating Deploy Script..."
         cat <<EOF > run_deploy.py
