@@ -34,7 +34,7 @@ steps:
     waitFor: ['run-eval-tests']
 
   # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (Fixed with Telemetry)
+  # STAGE 3: AGENT ENGINE DEPLOY (Hardcoded Staging Bucket)
   # =====================================================
   - name: 'python:3.11' 
     id: 'deploy-agent-engine'
@@ -46,30 +46,35 @@ steps:
       - '-c'
       - |
         echo "🔹 [Stage 3] Installing LATEST Deploy Dependencies..."
-        # We force upgrade to ensure we have the AdkApp wrapper support
         pip install --upgrade "google-cloud-aiplatform[reasoningengine,langchain]" google-adk python-dotenv
+
+        # --- 1. CREATE BUCKET (HARDCODED) ---
+        echo "🔹 [Stage 3] Ensuring bucket exists: gs://adk_agent_engine_staging"
+        gcloud storage buckets create gs://adk_agent_engine_staging --location=$REGION --uniform-bucket-level-access || true
 
         echo "🔹 [Stage 3] Generating Deploy Script..."
         cat <<EOF > run_deploy.py
         import os
         import vertexai
         from vertexai.preview import reasoning_engines
-        
-        # Correctly importing from your folder structure
         from brady_agent.agent import root_agent 
 
         project_id = os.environ.get("GCP_PROJECT_ID")
         location = os.environ.get("REGION", "us-central1")
+        
+        # --- 2. PYTHON CONFIG (HARDCODED) ---
+        staging_bucket = "gs://adk_agent_engine_staging"
 
         print(f"🚀 Connecting to Vertex AI in {project_id}...")
-        vertexai.init(project=project_id, location=location)
+        print(f"📂 Using Staging Bucket: {staging_bucket}")
+        
+        vertexai.init(
+            project=project_id, 
+            location=location, 
+            staging_bucket=staging_bucket
+        )
 
-        # --- TELEMETRY FIX ---
-        # We wrap the agent in an AdkApp with enable_tracing=True.
-        # This automatically sets up the observability sidecars.
-        
         print("🛠️  Wrapping agent in AdkApp for Telemetry...")
-        
         if isinstance(root_agent, reasoning_engines.AdkApp):
             agent_to_deploy = root_agent
         else:
