@@ -45,38 +45,27 @@ steps:
     waitFor: ['push-container']
 
   # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (Telemetry Enabled)
+  # STAGE 3: AGENT ENGINE DEPLOY (Clean & Simple)
   # =====================================================
   - name: 'python:3.11' 
     id: 'deploy-agent-engine'
     entrypoint: 'bash'
-    # We use the standard PROJECT_ID
-    env:
-      - 'PROJECT_ID=$PROJECT_ID' 
     args:
       - '-c'
       - |
         echo "🔹 [Stage 3] Installing ADK..."
         pip install google-adk
-
-        # --- FIX 1: Add Telemetry Deps ---
+        
+        # We still add these to ensure the agent has the power to send data
         echo "opentelemetry-sdk" >> requirements.txt
         echo "opentelemetry-exporter-google-cloud" >> requirements.txt
 
-        # --- FIX 2: Inject Config (The Patch) ---
-        echo "🔹 [Stage 3] Configuring Agent for Telemetry..."
-        sed -i "1s|^|import os\nos.environ['GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY'] = 'true'\nos.environ['OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT'] = 'true'\n|" brady_agent/agent.py
-
-        # --- FIX 3: Deploy with ADK ---
-        echo "🔹 [Stage 3] Deploying to Vertex AI..."
-        
+        echo "🔹 [Stage 3] Deploying using local .env..."
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
           --region us-central1 \
-          --display_name "Brady Logistics Agent (Observability Enabled)"
+          --display_name "Brady Logistics Agent"
 
-    # Use 'deploy-cloud-run' here to ensure sequential ordering, 
-    # or 'run-eval-tests' if you want them to run in parallel.
     waitFor: ['run-eval-tests']
 
 timeout: '1200s'
