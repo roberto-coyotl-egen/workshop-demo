@@ -37,7 +37,7 @@ steps:
     waitFor: ['push-container']
 
 # =====================================================
-  # STAGE 3: AGENT ENGINE DEPLOY (The MacBook-Mimic Version)
+  # STAGE 3: AGENT ENGINE DEPLOY
   # =====================================================
   - name: 'python:3.11'
     id: 'deploy-agent-engine'
@@ -51,11 +51,11 @@ steps:
         # 2. Check files to ensure we are where we think we are
         ls -R
         
-        # 3. Deploy exactly like your Mac, using './' to fix pathing
+        # 3. Deploy unsing adk deploy... 
         adk deploy agent_engine brady_agent \
           --project $PROJECT_ID \
           --region us-central1 \
-          --display_name "Brady Logistics Agent" \
+          --display_name "Brady Logistics Agent v2" \
           --env_file .env \
           --requirements_file requirements.txt \
           --trace_to_cloud
