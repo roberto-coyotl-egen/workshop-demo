@@ -1,107 +1,144 @@
 import os
 import json
+import time
+import uuid
 import requests
 import google.auth
 from google.auth.transport.requests import Request
 from dotenv import load_dotenv
 
 # 1. Setup
-import os
-from dotenv import load_dotenv
-
-
 load_dotenv(".env")
 
 PROJECT_ID = os.getenv("GCP_PROJECT_ID")
 REGION = os.getenv("REGION", "us-central1")
 AGENT_ID = os.getenv("AGENT_ID")
+
+if not AGENT_ID:
+    raise ValueError("❌ AGENT_ID is missing from .env")
+
+# The endpoint for streaming interactions
 ENGINE_URL = f"https://{REGION}-aiplatform.googleapis.com/v1beta1/{AGENT_ID}:streamQuery"
 
-# Auth
-creds, _ = google.auth.default()
-creds.refresh(Request())
-headers = {"Authorization": f"Bearer {creds.token}", "Content-Type": "application/json"}
-
-# 2. The Test Suite
-test_cases = [
+# 2. DEFINING THE CONVERSATIONS
+# Each "scenario" is a list of turns. We expect the agent to remember Turn 1 when answering Turn 2.
+conversations = [
     {
-        "desc": "✅ SHIPPED ORDER (Expect: Wireless Headphones)",
-        "query": "Where is order ORD-123?"
+        "name": "🚚 The 'Drill Down' (Tracking -> Detail -> ETA)",
+        "user": "Logistics_Mgr_Bob",
+        "turns": [
+            "Where is shipment BR-9901?",
+            "What is specifically inside that container?",
+            "Is it going to be late?",
+            "Okay, email the customer about the delay."
+        ]
     },
     {
-        "desc": "⏳ PENDING ORDER (Expect: Gaming Monitor / TBD)",
-        "query": "What is the status of ORD-456?"
+        "name": "🔧 The 'Context Switch' (Maintenance -> History -> Comparison)",
+        "user": "Mechanic_Mike",
+        "turns": [
+            "Show me the maintenance logs for Truck 402.",
+            "Who was the last driver?",
+            "Wait, actually check Truck 505 instead.",
+            "Which of those two trucks has higher mileage?"
+        ]
     },
     {
-        "desc": "📦 DELIVERED ORDER (Expect: Coffee Maker)",
-        "query": "Tell me about order ORD-789"
+        "name": "📉 The 'Analyst' (Data -> Summary -> Formatting)",
+        "user": "Analyst_Sarah",
+        "turns": [
+            "How many shipments were delivered to Austin last month?",
+            "Break that down by product type.",
+            "Can you format that as a bulleted list?",
+            "Thanks, that's all."
+        ]
     },
     {
-        "desc": "🎲 TOOL USAGE (Expect: Random Order Generation)",
-        "query": "Generate a random fake order for testing."
-    },
-    {
-        "desc": "❌ MISSING ORDER (Expect: Error Handling)",
-        "query": "Where is order ORD-999?"
+        "name": "⚠️ The 'Correction' (Ambiguity -> Refinement)",
+        "user": "Support_Alice",
+        "turns": [
+            "Status of order 123.",
+            "Sorry, I meant shipment BR-123, not the order.",
+            "Does it have any hazardous materials?",
+            "What is the emergency contact for that?"
+        ]
     }
 ]
 
-def run_test(scenario):
-    print(f"\n──────────────────────────────────────────────────")
-    print(f"🔹 TEST: {scenario['desc']}")
-    print(f"   User > \"{scenario['query']}\"")
-    print(f"   (Agent is thinking...)", end="", flush=True)
+def run_conversation_thread(conversation):
+    # 1. Generate a unique Session ID for this entire thread
+    session_id = f"sess-{uuid.uuid4().hex[:8]}"
+    user_id = conversation["user"]
+    
+    print(f"\n🔵 STARTING THREAD: {conversation['name']}")
+    print(f"   🆔 Session ID: {session_id}")
+    print(f"   👤 User: {user_id}")
+    print("   ──────────────────────────────────────────────────")
 
-    payload = {
-        "input": {
-            "message": scenario['query'],
-            "user_id": "final_verifier_01" 
-        }
+    # Refresh auth once per thread
+    creds, _ = google.auth.default()
+    creds.refresh(Request())
+    headers = {
+        "Authorization": f"Bearer {creds.token}",
+        "Content-Type": "application/json"
     }
 
-    try:
-        resp = requests.post(ENGINE_URL, json=payload, headers=headers, stream=True)
-        resp.raise_for_status()
+    for i, user_text in enumerate(conversation["turns"]):
+        print(f"\n   [{i+1}/{len(conversation['turns'])}] User > \"{user_text}\"")
         
-        print("\r   🤖 Brady > ", end="") 
-        
-        full_text = ""
-        for line in resp.iter_lines():
-            if line:
-                decoded = line.decode('utf-8').replace("data: ", "")
-                try:
-                    chunk = json.loads(decoded)
-                    
-                    # --- CORRECT PARSER FOR YOUR AGENT ---
-                    # We look for: content -> parts -> [0] -> text
-                    content = chunk.get("content", {})
-                    if "parts" in content:
-                        for part in content["parts"]:
-                            if "text" in part:
-                                text_fragment = part["text"]
-                                print(text_fragment, end="", flush=True)
-                                full_text += text_fragment
-                    
-                    # Fallback for simpler messages
-                    elif "output" in chunk:
-                         print(chunk["output"], end="", flush=True)
-                         full_text += str(chunk["output"])
+        # 2. The Payload: CRITICAL -> We pass 'session_id' to maintain context
+        payload = {
+            "input": {
+                "message": user_text,
+                "user_id": user_id,
+                "session_id": session_id # <-- The key to multi-turn memory
+            }
+        }
 
-                except:
-                    pass
-        
-        if not full_text.strip():
-             # If we got JSON but no text, it might have been a silent tool call intermediate step
-             pass 
+        # 3. Fire the request
+        try:
+            start_time = time.time()
+            resp = requests.post(ENGINE_URL, json=payload, headers=headers, stream=True)
+            resp.raise_for_status()
 
-        print("") 
+            print("   🤖 Brady > ", end="", flush=True)
+            
+            full_response = ""
+            for line in resp.iter_lines():
+                if line:
+                    decoded = line.decode('utf-8').replace("data: ", "")
+                    try:
+                        chunk = json.loads(decoded)
+                        # Parsing logic (handles standard Gemini/Vertex chunks)
+                        if "output" in chunk:
+                            text = str(chunk["output"])
+                            print(text, end="", flush=True)
+                            full_response += text
+                        elif "content" in chunk and "parts" in chunk["content"]:
+                             for part in chunk["content"]["parts"]:
+                                 if "text" in part:
+                                     print(part["text"], end="", flush=True)
+                                     full_response += part["text"]
+                    except:
+                        pass
+            
+            print(f"\n   ⏱️  ({time.time() - start_time:.2f}s)")
+            
+            # Short sleep to simulate reading time (and avoid rate limits)
+            time.sleep(1.5)
 
-    except Exception as e:
-        print(f"\n❌ Error: {e}")
+        except Exception as e:
+            print(f"\n   ❌ Error on turn {i+1}: {e}")
+            break # Stop this thread if it crashes
 
-# 3. Run It
-print(f"🚀 Launching Final Verification for Agent: {AGENT_ID}...")
-for case in test_cases:
-    run_test(case)
+    print(f"   🏁 Thread Complete.\n")
 
-print("\n✅ All systems operational.")
+# 3. EXECUTION
+print(f"🚀 Starting Multi-Turn Conversation Tests...")
+print(f"🎯 Target Agent: {AGENT_ID}")
+
+for convo in conversations:
+    run_conversation_thread(convo)
+    time.sleep(2) # Pause between different users
+
+print("\n✅ All conversations finished. Check 'Session History' in Vertex AI.")

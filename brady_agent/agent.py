@@ -76,7 +76,7 @@ def generate_random_order() -> dict:
 # --- 3. AGENT DEFINITION ---
 root_agent = Agent(
     name="brady_agent",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-pro",
     description="Logistics assistant that checks order status, contents, and tracking.",
     instruction="""
     You are 'Brady', an advanced logistics assistant.
