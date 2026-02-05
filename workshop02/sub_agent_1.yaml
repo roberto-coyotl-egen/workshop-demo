@@ -1,0 +1,4 @@
+name: sub_agent_1
+agent_class: LoopAgent
+sub_agents: []
+max_iterations: 2

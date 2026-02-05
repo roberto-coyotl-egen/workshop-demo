@@ -1,0 +1,8 @@
+name: workshop02
+model: gemini-2.5-pro
+agent_class: LlmAgent
+instruction: You are the root agent that coordinates other agents.
+sub_agents:
+  - config_path: ./sub_agent_1.yaml
+tools:
+  - name: google_search

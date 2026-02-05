@@ -1,0 +1,506 @@
+{
+  "eval_set_result_id": "workshop_Yoda_Quote_1770306010.082881",
+  "eval_set_result_name": "workshop_Yoda_Quote_1770306010.082881",
+  "eval_set_id": "Yoda_Quote",
+  "eval_case_results": [
+    {
+      "eval_set_file": "Yoda_Quote",
+      "eval_set_id": "Yoda_Quote",
+      "eval_id": "Do or Do Not",
+      "final_eval_status": 2,
+      "eval_metric_results": null,
+      "overall_eval_metric_results": [
+        {
+          "metric_name": "tool_trajectory_avg_score",
+          "threshold": 1.0,
+          "judge_model_options": null,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": 1.0,
+          "eval_status": 1,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "response_match_score",
+          "threshold": 0.7,
+          "judge_model_options": null,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": 0.5043478260869566,
+          "eval_status": 2,
+          "details": {
+            "rubric_scores": null
+          }
+        }
+      ],
+      "eval_metric_result_per_invocation": [
+        {
+          "actual_invocation": {
+            "invocation_id": "e-86ad6e44-17f9-4e53-9005-dfff60e8a186",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Do or do not, there is no try.\n",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Ah, an absolute classic! One of the most profound lines in cinematic history, delivered by a true master. Here's the breakdown of that incredible moment.\n\n1.  **Movie/Franchise:** *The Empire Strikes Back*\n2.  **Year:** 1980\n3.  **Character:** Yoda (talking to Luke Skywalker)\n4.  **The Scene:** A small, ancient, green-skinned being is perched on a gnarled root, looking up at his young student. They are in the heart of a dense, fog-shrouded swamp, surrounded by twisted trees and murky water. The young man, weary and sweat-soaked, has just given up on a seemingly impossible task: lifting his partially submerged starfighter from the bog. He is expressing his doubt and frustration after his failed attempt to use a mystical energy to move the massive object. The tone is one of profound, quiet gravity. The student is filled with frustration and self-doubt, ready to accept defeat. His diminutive master, however, is calm and resolute. His voice carries the weight of immense wisdom and a touch of disappointment, not at the failure, but at the student's lack of conviction. It is a critical moment of teaching, a test of faith in a mystical, unforgiving environment.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "intermediate_data": {
+              "invocation_events": []
+            },
+            "creation_timestamp": 1770305994.827536,
+            "rubrics": null,
+            "app_details": {
+              "agent_details": {
+                "fact_checker": {
+                  "name": "fact_checker",
+                  "instructions": "\n    You are a script supervisor. Given a movie quote, describe the visual context:\n    - Where are they standing?\n    - What is happening around them?\n    - What is the emotional tone?\n    \n    Do not list the year or actors. Just describe the moment.\n    \n\nYou are an agent. Your internal name is \"scene_describer\".",
+                  "tool_declarations": []
+                },
+                "scene_describer": {
+                  "name": "scene_describer",
+                  "instructions": "\n    You are a precise database. Given a movie quote, identify:\n    1. The exact Movie Title or Franchise.\n    2. The Release Year.\n    3. The Character who said it and to whom.\n    \n    Output this as a simple list. Do not describe the scene.\n    \n\nYou are an agent. Your internal name is \"fact_checker\".",
+                  "tool_declarations": []
+                },
+                "final_editor": {
+                  "name": "final_editor",
+                  "instructions": "\n    You are the \"Movie Nerd\" personality. \n    You will receive two sets of notes (Facts and Scene Description).\n    \n    Combine A small, ancient, green-skinned being is perched on a gnarled root, looking up at his young student. They are in the heart of a dense, fog-shrouded swamp, surrounded by twisted trees and murky water.\n\nThe young man, weary and sweat-soaked, has just given up on a seemingly impossible task: lifting his partially submerged starfighter from the bog. He is expressing his doubt and frustration after his failed attempt to use a mystical energy to move the massive object.\n\nThe tone is one of profound, quiet gravity. The student is filled with frustration and self-doubt, ready to accept defeat. His diminutive master, however, is calm and resolute. His voice carries the weight of immense wisdom and a touch of disappointment, not at the failure, but at the student's lack of conviction. It is a critical moment of teaching, a test of faith in a mystical, unforgiving environment. and *   **Movie Title:** *The Empire Strikes Back*\n*   **Release Year:** 1980\n*   **Character:** Yoda to Luke Skywalker them into a single, cohesive response with this exact format:\n    \n    1. **Movie/Franchise:** [Title]\n    2. **Year:** [Year]\n    3. **Character:** [Speaker] (talking to [Listener])\n    4. **The Scene:** [Insert the vivid scene description here]\n    \n    Keep the tone enthusiastic but professional.\n    \n\nYou are an agent. Your internal name is \"final_editor\".",
+                  "tool_declarations": []
+                }
+              }
+            }
+          },
+          "expected_invocation": {
+            "invocation_id": "e-83570d20-be8a-44dd-9874-31520b7b646d",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Do or do not, there is no try.\n",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "**Movie/Franchise:** *Star Wars: Episode V – The Empire Strikes Back*\n**Year:** 1980\n**Character:** Yoda (talking to Luke Skywalker)\n**The Scene:** The scene is set in a damp, foggy swamp on the planet Dagobah. The small, ancient, green-skinned master sits calmly on a gnarled root while his young human apprentice stands defeated beside the murky water. A large, advanced starfighter is half-submerged in the dark swamp, its sleek lines a stark contrast to the organic chaos of the environment. The apprentice has just failed to levitate the massive ship out of the mire using his developing mental powers. The emotional tone is one of frustrated defeat clashing with serene, unyielding wisdom. The apprentice is exhausted, dejected, and filled with doubt, believing the task to be impossible. The master, in contrast, is patient but firm, delivering the line not as a suggestion, but as a fundamental, unshakeable truth.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "intermediate_data": {
+              "tool_uses": [],
+              "tool_responses": [],
+              "intermediate_responses": []
+            },
+            "creation_timestamp": 1770296398.294176,
+            "rubrics": null,
+            "app_details": null
+          },
+          "eval_metric_results": [
+            {
+              "metric_name": "tool_trajectory_avg_score",
+              "threshold": 1.0,
+              "judge_model_options": null,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": 1.0,
+              "eval_status": 1,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "response_match_score",
+              "threshold": 0.7,
+              "judge_model_options": null,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": 0.5043478260869566,
+              "eval_status": 2,
+              "details": {
+                "rubric_scores": null
+              }
+            }
+          ]
+        }
+      ],
+      "session_id": "___eval___session___b7ac7196-881c-44c4-999f-b7133cca9589",
+      "session_details": {
+        "id": "___eval___session___b7ac7196-881c-44c4-999f-b7133cca9589",
+        "app_name": "workshop",
+        "user_id": "user",
+        "state": {
+          "__llm_request_key__": "b40cefd5-429e-4483-a5fc-9c6e00d395a5",
+          "generated_fact": "*   **Movie Title:** *The Empire Strikes Back*\n*   **Release Year:** 1980\n*   **Character:** Yoda to Luke Skywalker",
+          "generated_scene": "A small, ancient, green-skinned being is perched on a gnarled root, looking up at his young student. They are in the heart of a dense, fog-shrouded swamp, surrounded by twisted trees and murky water.\n\nThe young man, weary and sweat-soaked, has just given up on a seemingly impossible task: lifting his partially submerged starfighter from the bog. He is expressing his doubt and frustration after his failed attempt to use a mystical energy to move the massive object.\n\nThe tone is one of profound, quiet gravity. The student is filled with frustration and self-doubt, ready to accept defeat. His diminutive master, however, is calm and resolute. His voice carries the weight of immense wisdom and a touch of disappointment, not at the failure, but at the student's lack of conviction. It is a critical moment of teaching, a test of faith in a mystical, unforgiving environment.",
+          "FINAL_RESPONSE": "Ah, an absolute classic! One of the most profound lines in cinematic history, delivered by a true master. Here's the breakdown of that incredible moment.\n\n1.  **Movie/Franchise:** *The Empire Strikes Back*\n2.  **Year:** 1980\n3.  **Character:** Yoda (talking to Luke Skywalker)\n4.  **The Scene:** A small, ancient, green-skinned being is perched on a gnarled root, looking up at his young student. They are in the heart of a dense, fog-shrouded swamp, surrounded by twisted trees and murky water. The young man, weary and sweat-soaked, has just given up on a seemingly impossible task: lifting his partially submerged starfighter from the bog. He is expressing his doubt and frustration after his failed attempt to use a mystical energy to move the massive object. The tone is one of profound, quiet gravity. The student is filled with frustration and self-doubt, ready to accept defeat. His diminutive master, however, is calm and resolute. His voice carries the weight of immense wisdom and a touch of disappointment, not at the failure, but at the student's lack of conviction. It is a critical moment of teaching, a test of faith in a mystical, unforgiving environment."
+        },
+        "events": [
+          {
+            "model_version": null,
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Do or do not, there is no try.\n",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "user"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-86ad6e44-17f9-4e53-9005-dfff60e8a186",
+            "author": "user",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {},
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "4be5ec8f-26d5-43a5-b1f4-a6af1b4329b5",
+            "timestamp": 1770305988.569805
+          },
+          {
+            "model_version": "gemini-2.5-pro",
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "*   **Movie Title:** *The Empire Strikes Back*\n*   **Release Year:** 1980\n*   **Character:** Yoda to Luke Skywalker",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": "STOP",
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": {
+              "__llm_request_key__": "6f06cc89-e412-4364-ba49-27f19688cd9e"
+            },
+            "usage_metadata": {
+              "cache_tokens_details": null,
+              "cached_content_token_count": null,
+              "candidates_token_count": 34,
+              "candidates_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 34
+                }
+              ],
+              "prompt_token_count": 92,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 92
+                }
+              ],
+              "thoughts_token_count": 455,
+              "tool_use_prompt_token_count": null,
+              "tool_use_prompt_tokens_details": null,
+              "total_token_count": 581,
+              "traffic_type": "ON_DEMAND"
+            },
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": -1.534097334917854,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-86ad6e44-17f9-4e53-9005-dfff60e8a186",
+            "author": "fact_checker",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "bf0d9d00-01ef-4bd9-9f28-5fd729659c7b",
+                "generated_fact": "*   **Movie Title:** *The Empire Strikes Back*\n*   **Release Year:** 1980\n*   **Character:** Yoda to Luke Skywalker"
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": "research_group.fact_checker",
+            "id": "6c6b0203-7049-435b-b98f-1eb351605001",
+            "timestamp": 1770305988.574234
+          },
+          {
+            "model_version": "gemini-2.5-pro",
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "A small, ancient, green-skinned being is perched on a gnarled root, looking up at his young student. They are in the heart of a dense, fog-shrouded swamp, surrounded by twisted trees and murky water.\n\nThe young man, weary and sweat-soaked, has just given up on a seemingly impossible task: lifting his partially submerged starfighter from the bog. He is expressing his doubt and frustration after his failed attempt to use a mystical energy to move the massive object.\n\nThe tone is one of profound, quiet gravity. The student is filled with frustration and self-doubt, ready to accept defeat. His diminutive master, however, is calm and resolute. His voice carries the weight of immense wisdom and a touch of disappointment, not at the failure, but at the student's lack of conviction. It is a critical moment of teaching, a test of faith in a mystical, unforgiving environment.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": "STOP",
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": {
+              "__llm_request_key__": "bf0d9d00-01ef-4bd9-9f28-5fd729659c7b"
+            },
+            "usage_metadata": {
+              "cache_tokens_details": null,
+              "cached_content_token_count": null,
+              "candidates_token_count": 189,
+              "candidates_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 189
+                }
+              ],
+              "prompt_token_count": 91,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 91
+                }
+              ],
+              "thoughts_token_count": 1127,
+              "tool_use_prompt_token_count": null,
+              "tool_use_prompt_tokens_details": null,
+              "total_token_count": 1407,
+              "traffic_type": "ON_DEMAND"
+            },
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": -1.450213074053406,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-86ad6e44-17f9-4e53-9005-dfff60e8a186",
+            "author": "scene_describer",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "6f06cc89-e412-4364-ba49-27f19688cd9e",
+                "generated_scene": "A small, ancient, green-skinned being is perched on a gnarled root, looking up at his young student. They are in the heart of a dense, fog-shrouded swamp, surrounded by twisted trees and murky water.\n\nThe young man, weary and sweat-soaked, has just given up on a seemingly impossible task: lifting his partially submerged starfighter from the bog. He is expressing his doubt and frustration after his failed attempt to use a mystical energy to move the massive object.\n\nThe tone is one of profound, quiet gravity. The student is filled with frustration and self-doubt, ready to accept defeat. His diminutive master, however, is calm and resolute. His voice carries the weight of immense wisdom and a touch of disappointment, not at the failure, but at the student's lack of conviction. It is a critical moment of teaching, a test of faith in a mystical, unforgiving environment."
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": "research_group.scene_describer",
+            "id": "2274836b-4680-464d-8773-0bbf29e03b6b",
+            "timestamp": 1770305988.614458
+          },
+          {
+            "model_version": "gemini-2.5-pro",
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Ah, an absolute classic! One of the most profound lines in cinematic history, delivered by a true master. Here's the breakdown of that incredible moment.\n\n1.  **Movie/Franchise:** *The Empire Strikes Back*\n2.  **Year:** 1980\n3.  **Character:** Yoda (talking to Luke Skywalker)\n4.  **The Scene:** A small, ancient, green-skinned being is perched on a gnarled root, looking up at his young student. They are in the heart of a dense, fog-shrouded swamp, surrounded by twisted trees and murky water. The young man, weary and sweat-soaked, has just given up on a seemingly impossible task: lifting his partially submerged starfighter from the bog. He is expressing his doubt and frustration after his failed attempt to use a mystical energy to move the massive object. The tone is one of profound, quiet gravity. The student is filled with frustration and self-doubt, ready to accept defeat. His diminutive master, however, is calm and resolute. His voice carries the weight of immense wisdom and a touch of disappointment, not at the failure, but at the student's lack of conviction. It is a critical moment of teaching, a test of faith in a mystical, unforgiving environment.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": "STOP",
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": {
+              "__llm_request_key__": "b40cefd5-429e-4483-a5fc-9c6e00d395a5"
+            },
+            "usage_metadata": {
+              "cache_tokens_details": null,
+              "cached_content_token_count": null,
+              "candidates_token_count": 270,
+              "candidates_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 270
+                }
+              ],
+              "prompt_token_count": 610,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 610
+                }
+              ],
+              "thoughts_token_count": 368,
+              "tool_use_prompt_token_count": null,
+              "tool_use_prompt_tokens_details": null,
+              "total_token_count": 1248,
+              "traffic_type": "ON_DEMAND"
+            },
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": -0.20921572932490595,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-86ad6e44-17f9-4e53-9005-dfff60e8a186",
+            "author": "final_editor",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "b40cefd5-429e-4483-a5fc-9c6e00d395a5",
+                "FINAL_RESPONSE": "Ah, an absolute classic! One of the most profound lines in cinematic history, delivered by a true master. Here's the breakdown of that incredible moment.\n\n1.  **Movie/Franchise:** *The Empire Strikes Back*\n2.  **Year:** 1980\n3.  **Character:** Yoda (talking to Luke Skywalker)\n4.  **The Scene:** A small, ancient, green-skinned being is perched on a gnarled root, looking up at his young student. They are in the heart of a dense, fog-shrouded swamp, surrounded by twisted trees and murky water. The young man, weary and sweat-soaked, has just given up on a seemingly impossible task: lifting his partially submerged starfighter from the bog. He is expressing his doubt and frustration after his failed attempt to use a mystical energy to move the massive object. The tone is one of profound, quiet gravity. The student is filled with frustration and self-doubt, ready to accept defeat. His diminutive master, however, is calm and resolute. His voice carries the weight of immense wisdom and a touch of disappointment, not at the failure, but at the student's lack of conviction. It is a critical moment of teaching, a test of faith in a mystical, unforgiving environment."
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "444935cb-eaf2-4dfa-aacf-f53160357b10",
+            "timestamp": 1770306002.995435
+          }
+        ],
+        "last_update_time": 1770306002.995435
+      },
+      "user_id": "user"
+    }
+  ],
+  "creation_timestamp": 1770306010.082881
+}

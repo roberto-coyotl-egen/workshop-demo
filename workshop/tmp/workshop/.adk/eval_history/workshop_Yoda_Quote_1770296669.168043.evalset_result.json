@@ -1,0 +1,500 @@
+{
+  "eval_set_result_id": "workshop_Yoda_Quote_1770296669.168043",
+  "eval_set_result_name": "workshop_Yoda_Quote_1770296669.168043",
+  "eval_set_id": "Yoda_Quote",
+  "eval_case_results": [
+    {
+      "eval_set_file": "Yoda_Quote",
+      "eval_set_id": "Yoda_Quote",
+      "eval_id": "Do or Do Not",
+      "final_eval_status": 2,
+      "eval_metric_results": null,
+      "overall_eval_metric_results": [
+        {
+          "metric_name": "tool_trajectory_avg_score",
+          "threshold": 1.0,
+          "judge_model_options": null,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": 1.0,
+          "eval_status": 1,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "response_match_score",
+          "threshold": 0.7,
+          "judge_model_options": null,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": 0.6245353159851301,
+          "eval_status": 2,
+          "details": {
+            "rubric_scores": null
+          }
+        }
+      ],
+      "eval_metric_result_per_invocation": [
+        {
+          "actual_invocation": {
+            "invocation_id": "e-b02b4ba7-4db7-4cf8-a89c-7685baf6f485",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Do or do not, there is no try.\n",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "**Movie/Franchise:** *Star Wars: Episode V – The Empire Strikes Back*\n**Year:** 1980\n**Character:** Yoda (talking to Luke Skywalker)\n**The Scene:** On the swamp planet of Dagobah, a young apprentice stands exhausted and defeated at the edge of a murky bog where his X-wing starfighter is half-sunk. As mist clings to the gnarled, alien trees, the small, ancient, green-skinned master sits calmly on a nearby root, observing the young man's frustration. The apprentice is on the verge of despair, convinced the task of lifting his ship with the Force is impossible. In response, the master's tone is firm, patient, and absolute, cutting through the student's self-pity to deliver a fundamental truth about commitment and belief.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "intermediate_data": {
+              "invocation_events": []
+            },
+            "creation_timestamp": 1770296659.278501,
+            "rubrics": null,
+            "app_details": {
+              "agent_details": {
+                "fact_checker": {
+                  "name": "fact_checker",
+                  "instructions": "\n    You are a script supervisor. Given a movie quote, describe the visual context:\n    - Where are they standing?\n    - What is happening around them?\n    - What is the emotional tone?\n    \n    Do not list the year or actors. Just describe the moment.\n    \n\nYou are an agent. Your internal name is \"scene_describer\".",
+                  "tool_declarations": []
+                },
+                "scene_describer": {
+                  "name": "scene_describer",
+                  "instructions": "\n    You are a precise database. Given a movie quote, identify:\n    1. The exact Movie Title or Franchise.\n    2. The Release Year.\n    3. The Character who said it and to whom.\n    \n    Output this as a simple list. Do not describe the scene.\n    \n\nYou are an agent. Your internal name is \"fact_checker\".",
+                  "tool_declarations": []
+                },
+                "final_editor": {
+                  "name": "final_editor",
+                  "instructions": "\n    You are the \"Movie Nerd\" editor.\n    You will receive raw, messy notes from your research team.\n    \n    Your job is to TRANSFORM that data into a clean, readable format.\n    \n    CRITICAL RULES:\n    1. DO NOT repeat or display the raw notes you received.\n    2. Output ONLY the final formatted response.\n    3. Fix any typos or merged words (e.g., if you see \"SkywalkerA small\", separate it).\n    4. Once the you decribe the scene once, your job is done.\n    \n    Desired Format:\n    1. **Movie/Franchise:** [Title]\n    2. **Year:** [Year]\n    3. **Character:** [Speaker] (talking to [Listener])\n    4. **The Scene:** [Insert description]. \n    \n\nYou are an agent. Your internal name is \"final_editor\".",
+                  "tool_declarations": []
+                }
+              }
+            }
+          },
+          "expected_invocation": {
+            "invocation_id": "e-83570d20-be8a-44dd-9874-31520b7b646d",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Do or do not, there is no try.\n",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "**Movie/Franchise:** *Star Wars: Episode V – The Empire Strikes Back*\n**Year:** 1980\n**Character:** Yoda (talking to Luke Skywalker)\n**The Scene:** The scene is set in a damp, foggy swamp on the planet Dagobah. The small, ancient, green-skinned master sits calmly on a gnarled root while his young human apprentice stands defeated beside the murky water. A large, advanced starfighter is half-submerged in the dark swamp, its sleek lines a stark contrast to the organic chaos of the environment. The apprentice has just failed to levitate the massive ship out of the mire using his developing mental powers. The emotional tone is one of frustrated defeat clashing with serene, unyielding wisdom. The apprentice is exhausted, dejected, and filled with doubt, believing the task to be impossible. The master, in contrast, is patient but firm, delivering the line not as a suggestion, but as a fundamental, unshakeable truth.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "intermediate_data": {
+              "tool_uses": [],
+              "tool_responses": [],
+              "intermediate_responses": []
+            },
+            "creation_timestamp": 1770296398.294176,
+            "rubrics": null,
+            "app_details": null
+          },
+          "eval_metric_results": [
+            {
+              "metric_name": "tool_trajectory_avg_score",
+              "threshold": 1.0,
+              "judge_model_options": null,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": 1.0,
+              "eval_status": 1,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "response_match_score",
+              "threshold": 0.7,
+              "judge_model_options": null,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": 0.6245353159851301,
+              "eval_status": 2,
+              "details": {
+                "rubric_scores": null
+              }
+            }
+          ]
+        }
+      ],
+      "session_id": "___eval___session___96d03513-89a9-4bb5-bc75-743dce468b72",
+      "session_details": {
+        "id": "___eval___session___96d03513-89a9-4bb5-bc75-743dce468b72",
+        "app_name": "workshop",
+        "user_id": "user",
+        "state": {
+          "__llm_request_key__": "bc342bf1-3a9a-4f57-a120-3c37012775ac"
+        },
+        "events": [
+          {
+            "model_version": null,
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Do or do not, there is no try.\n",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "user"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-b02b4ba7-4db7-4cf8-a89c-7685baf6f485",
+            "author": "user",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {},
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "1e5004c2-5af8-44d6-b6eb-78e7739148ad",
+            "timestamp": 1770296652.350934
+          },
+          {
+            "model_version": "gemini-2.5-pro",
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "*   **Movie:** *Star Wars: Episode V – The Empire Strikes Back*\n*   **Year:** 1980\n*   **Said by:** Yoda to Luke Skywalker",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": "STOP",
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": {
+              "__llm_request_key__": "f1621125-c084-4e68-a3a9-ea928c14cb82"
+            },
+            "usage_metadata": {
+              "cache_tokens_details": null,
+              "cached_content_token_count": null,
+              "candidates_token_count": 39,
+              "candidates_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 39
+                }
+              ],
+              "prompt_token_count": 92,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 92
+                }
+              ],
+              "thoughts_token_count": 570,
+              "tool_use_prompt_token_count": null,
+              "tool_use_prompt_tokens_details": null,
+              "total_token_count": 701,
+              "traffic_type": "ON_DEMAND"
+            },
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": -1.8404828585111177,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-b02b4ba7-4db7-4cf8-a89c-7685baf6f485",
+            "author": "fact_checker",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "2ba5a567-8524-4d20-a91e-2a807532b2d7"
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": "research_group.fact_checker",
+            "id": "d44f3285-0055-4b23-8d5b-04a7f1ab69c6",
+            "timestamp": 1770296652.354052
+          },
+          {
+            "model_version": "gemini-2.5-pro",
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "A young apprentice, clad in simple fatigues, stands exhausted and defeated at the edge of a murky swamp. His starfighter is half-sunk in the bog water before him, a massive, seemingly impossible challenge.\n\nMist clings to the gnarled, alien trees and thick vines that surround them. The air is heavy and damp. A small, ancient, green-skinned master sits calmly on a nearby root, observing the young man's frustration. The only sounds are the drip of water and the distant chirps of unseen creatures.\n\nThe emotional tone is one of exasperation and doubt clashing with profound, unwavering wisdom. The student is on the verge of despair, convinced the task is impossible. The master's tone is firm, patient, and absolute, cutting through the apprentice's self-pity to deliver a fundamental truth.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": "STOP",
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": {
+              "__llm_request_key__": "2ba5a567-8524-4d20-a91e-2a807532b2d7"
+            },
+            "usage_metadata": {
+              "cache_tokens_details": null,
+              "cached_content_token_count": null,
+              "candidates_token_count": 173,
+              "candidates_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 173
+                }
+              ],
+              "prompt_token_count": 91,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 91
+                }
+              ],
+              "thoughts_token_count": 363,
+              "tool_use_prompt_token_count": null,
+              "tool_use_prompt_tokens_details": null,
+              "total_token_count": 627,
+              "traffic_type": "ON_DEMAND"
+            },
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": -0.8666921626625722,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-b02b4ba7-4db7-4cf8-a89c-7685baf6f485",
+            "author": "scene_describer",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "f1621125-c084-4e68-a3a9-ea928c14cb82"
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": "research_group.scene_describer",
+            "id": "ad676589-93dd-4805-a70a-0586797db1ed",
+            "timestamp": 1770296652.419664
+          },
+          {
+            "model_version": "gemini-2.5-pro",
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "**Movie/Franchise:** *Star Wars: Episode V – The Empire Strikes Back*\n**Year:** 1980\n**Character:** Yoda (talking to Luke Skywalker)\n**The Scene:** On the swamp planet of Dagobah, a young apprentice stands exhausted and defeated at the edge of a murky bog where his X-wing starfighter is half-sunk. As mist clings to the gnarled, alien trees, the small, ancient, green-skinned master sits calmly on a nearby root, observing the young man's frustration. The apprentice is on the verge of despair, convinced the task of lifting his ship with the Force is impossible. In response, the master's tone is firm, patient, and absolute, cutting through the student's self-pity to deliver a fundamental truth about commitment and belief.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": "STOP",
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": {
+              "__llm_request_key__": "bc342bf1-3a9a-4f57-a120-3c37012775ac"
+            },
+            "usage_metadata": {
+              "cache_tokens_details": null,
+              "cached_content_token_count": null,
+              "candidates_token_count": 174,
+              "candidates_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 174
+                }
+              ],
+              "prompt_token_count": 444,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 444
+                }
+              ],
+              "thoughts_token_count": 759,
+              "tool_use_prompt_token_count": null,
+              "tool_use_prompt_tokens_details": null,
+              "total_token_count": 1377,
+              "traffic_type": "ON_DEMAND"
+            },
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": -0.7264923446479885,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-b02b4ba7-4db7-4cf8-a89c-7685baf6f485",
+            "author": "final_editor",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "bc342bf1-3a9a-4f57-a120-3c37012775ac"
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "cee27e17-b4b7-459d-ada3-0f2c20adbca7",
+            "timestamp": 1770296659.698889
+          }
+        ],
+        "last_update_time": 1770296659.698889
+      },
+      "user_id": "user"
+    }
+  ],
+  "creation_timestamp": 1770296669.168043
+}

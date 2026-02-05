@@ -1,0 +1,38 @@
+{
+  "eval_set_id": "Yoda_Quote",
+  "name": "Yoda_Quote",
+  "eval_cases": [
+    {
+      "eval_id": "Do or Do Not",
+      "conversation": [
+        {
+          "invocation_id": "e-83570d20-be8a-44dd-9874-31520b7b646d",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Do or do not, there is no try.\n"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "**Movie/Franchise:** *Star Wars: Episode V – The Empire Strikes Back*\n**Year:** 1980\n**Character:** Yoda (talking to Luke Skywalker)\n**The Scene:** The scene is set in a damp, foggy swamp on the planet Dagobah. The small, ancient, green-skinned master sits calmly on a gnarled root while his young human apprentice stands defeated beside the murky water. A large, advanced starfighter is half-submerged in the dark swamp, its sleek lines a stark contrast to the organic chaos of the environment. The apprentice has just failed to levitate the massive ship out of the mire using his developing mental powers. The emotional tone is one of frustrated defeat clashing with serene, unyielding wisdom. The apprentice is exhausted, dejected, and filled with doubt, believing the task to be impossible. The master, in contrast, is patient but firm, delivering the line not as a suggestion, but as a fundamental, unshakeable truth."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {},
+          "creation_timestamp": 1770296398.294176
+        }
+      ],
+      "session_input": {
+        "app_name": "workshop",
+        "user_id": "user"
+      },
+      "creation_timestamp": 1770296492.316001
+    }
+  ],
+  "creation_timestamp": 1770296477.005879
+}

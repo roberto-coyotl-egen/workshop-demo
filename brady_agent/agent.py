@@ -55,7 +55,7 @@ def get_truck_maintenance_log(truck_id: str) -> dict:
 # --- 3. AGENT DEFINITION ---
 root_agent = Agent(
     name="brady_agent",
-    model="gemini-2.5-pro", 
+    model="gemini-2.5-flash", 
     description="Intelligent Logistics Coordinator for Brady Supply Chain.",
     instruction="""
     You are 'Brady', the AI Logistics Coordinator. 
